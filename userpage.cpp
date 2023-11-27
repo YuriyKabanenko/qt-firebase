@@ -1,6 +1,6 @@
 #include "userpage.h"
 #include "./ui_userpage.h"
-
+#include "mainwindow.h"
 UserPage::UserPage(QWidget *parent, User* user) :
     QWidget(parent),
     ui(new Ui::UserPage)
@@ -13,4 +13,13 @@ UserPage::UserPage(QWidget *parent, User* user) :
 UserPage::~UserPage()
 {
     delete ui;
+    delete user;
 }
+
+void UserPage::on_signOutButton_clicked()
+{
+    QWidget* mainWindow = new MainWindow(nullptr);
+    this->close();
+    mainWindow->show();
+}
+

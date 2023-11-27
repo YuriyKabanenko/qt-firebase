@@ -17,6 +17,9 @@ public:
     explicit UserPage(QWidget *parent = nullptr, User* user = nullptr);
     ~UserPage();
 
+private slots:
+    void on_signOutButton_clicked();
+
 private:
     Ui::UserPage *ui;
     User* user;

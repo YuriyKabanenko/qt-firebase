@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QDebug>
-
+#include "userpage.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -55,6 +55,9 @@ void MainWindow::on_loginButton_clicked()
 void MainWindow::on_user_signed_in()
 {
     qDebug() << user->getEmail() << " " << "signed in";
+    QWidget* userPage = new UserPage(nullptr,this->user);
+    this->close();
+    userPage->show();
 }
 
 bool MainWindow::isValid(QString& email, QString& password, QWidget* object){

@@ -12,8 +12,6 @@ public:
     QString getEmail() const;
     bool getIsEmailVerified() const;
 
-
-
     void setId(const QString &newId);
     void setEmail(const QString &newEmail);
     void setToken(const QString &newToken);

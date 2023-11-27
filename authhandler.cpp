@@ -3,14 +3,15 @@
 #include <QVariantMap>
 #include <QNetworkRequest>
 #include <QJsonObject>
+#include <QMessageBox>
 
-AuthHandler::AuthHandler(QObject *parent, User* user)
+AuthHandler::AuthHandler(QObject *parent, User* user, QWidget* widgetParent)
     : QObject(parent)
     , m_apiKey( QString() )
 {
     m_networkAccessManager = new QNetworkAccessManager( this );
     this->user = user;
-    connect( this, &AuthHandler::userSignedIn, this, &AuthHandler::performAuthenticatedDatabaseCall );
+    this->parent = widgetParent;
 }
 
 AuthHandler::~AuthHandler()
@@ -25,6 +26,7 @@ void AuthHandler::setAPIKey(const QString &apiKey)
 
 void AuthHandler::signUserUp(const QString &emailAddress, const QString &password)
 {
+    this->currentOperation = FirebaseOperation::SignUp;
     QString signUpEndpoint = "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + m_apiKey;
 
     QVariantMap variantPayload;
@@ -38,6 +40,7 @@ void AuthHandler::signUserUp(const QString &emailAddress, const QString &passwor
 
 User AuthHandler::signUserIn(const QString &emailAddress, const QString &password)
 {
+    this->currentOperation = FirebaseOperation::SignIn;
     QString signInEndpoint = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + m_apiKey;
 
     QVariantMap variantPayload;
@@ -61,13 +64,6 @@ void AuthHandler::networkReplyReadyRead()
     parseResponse( response );
 }
 
-void AuthHandler::performAuthenticatedDatabaseCall()
-{
-    QString endPoint = "https://qtfirebaseintegrationexample-default-rtdb.firebaseio.com/Pets.json?auth=" + m_idToken;
-    m_networkReply = m_networkAccessManager->get( QNetworkRequest(QUrl(endPoint)));
-    connect( m_networkReply, &QNetworkReply::readyRead, this, &AuthHandler::networkReplyReadyRead );
-}
-
 void AuthHandler::performPOST(const QString &url, const QJsonDocument &payload)
 {
     QNetworkRequest newRequest( (QUrl( url )) );
@@ -76,11 +72,15 @@ void AuthHandler::performPOST(const QString &url, const QJsonDocument &payload)
     connect( m_networkReply, &QNetworkReply::readyRead, this, &AuthHandler::networkReplyReadyRead );
 }
 
-void AuthHandler::parseResponse(const QByteArray &response)
+void AuthHandler::parseResponse(const QByteArray &response )
 {
     QJsonDocument jsonDocument = QJsonDocument::fromJson( response );
     if ( jsonDocument.object().contains("error") )
     {
+        QJsonObject errorObject = jsonDocument["error"].toObject();
+
+        QString errorMessage = errorObject["message"].toString();
+        QMessageBox::critical(this->parent,"Error", errorMessage);
         qDebug() << "Error occured!" << response;
     }
     else if ( jsonDocument.object().contains("kind"))
@@ -88,6 +88,7 @@ void AuthHandler::parseResponse(const QByteArray &response)
         QString idToken = jsonDocument.object().value("idToken").toString();
         //qDebug() << "Obtained user ID Token: " << idToken;
         qDebug() << "User signed in successfully!";
+        if(currentOperation == FirebaseOperation::SignIn){
         m_idToken = idToken;
         user->setEmail(jsonDocument.object().take("email").toString());
         user->setId(jsonDocument.object().take("localId").toString());
@@ -95,6 +96,7 @@ void AuthHandler::parseResponse(const QByteArray &response)
         user->setToken(jsonDocument.object().take("idToken").toString());
         user->setRefreshToken(jsonDocument.object().take("refreshToken").toString());
         emit userSignedIn();
+        }
     }
     else
         qDebug() << "The response was: " << response;
