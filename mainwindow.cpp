@@ -28,5 +28,23 @@ void MainWindow::on_registerButton_clicked()
         QMessageBox::warning(this, "Error", "Please enter both email and password.");
         return;
     }
+
+    QRegularExpression emailRegex(R"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})");
+    QRegularExpressionMatch match = emailRegex.match(email);
+
+    if (!match.hasMatch()) {
+        QMessageBox::warning(this, "Error", "Invalid email address format.");
+        return;
+    }
+    if (password.isEmpty()) {
+        QMessageBox::warning(this, "Error", "Please enter a password.");
+        return;
+    }
+
     authHandler->signUserUp(email,password);
+
+    QMessageBox::information(this, "Congratulations", "You've registered account");
+
+    ui->emailEdit->clear();
+    ui->passwordEdit->clear();
 }
