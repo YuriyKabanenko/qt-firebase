@@ -60,7 +60,7 @@ void AuthHandler::deleteAccount(QString idToken)
     this->currentOperation = FirebaseOperation::DeleteAccount;
     QString deleteAccountEndpoint = "https://identitytoolkit.googleapis.com/v1/accounts:delete?key=" + m_apiKey;
     QVariantMap variantPayload;
-    variantPayload[idToken] = idToken;
+    variantPayload["idToken"] = idToken;
     QJsonDocument jsonPayload = QJsonDocument::fromVariant( variantPayload );
     performPOST(deleteAccountEndpoint, jsonPayload);
 }
@@ -84,7 +84,11 @@ void AuthHandler::performPOST(const QString &url, const QJsonDocument &payload)
 void AuthHandler::parseResponse(const QByteArray &response )
 {
     QJsonDocument jsonDocument = QJsonDocument::fromJson( response );
-    if ( jsonDocument.object().contains("error") )
+
+    if(currentOperation == FirebaseOperation::DeleteAccount){
+        emit accountDeleted();
+    }
+    else if ( jsonDocument.object().contains("error"))
     {
         QJsonObject errorObject = jsonDocument["error"].toObject();
 
@@ -106,8 +110,5 @@ void AuthHandler::parseResponse(const QByteArray &response )
         user->setRefreshToken(jsonDocument.object().take("refreshToken").toString());
         emit userSignedIn();
         }
-    }
-    else if(currentOperation == FirebaseOperation::DeleteAccount && !jsonDocument.isArray()){
-        emit accountDeleted();
     }
 }

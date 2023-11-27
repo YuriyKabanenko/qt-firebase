@@ -7,7 +7,8 @@ UserPage::UserPage(QWidget *parent, User* user, AuthHandler* authHandler) :
 {
     ui->setupUi(this);
     this->user = user;
-    ui->label->setText(ui->label->text() + " " + user->getEmail());
+    ui->label->setText(ui->label->text() + " " + this->user->getEmail());
+    ui->label_2->setText(ui->label_2->text() + " " + this->user->getId());
     this->authHandler = authHandler;
 
     connect(this->authHandler, &AuthHandler::accountDeleted, this, &UserPage::on_signOutButton_clicked );
@@ -21,6 +22,7 @@ UserPage::~UserPage()
 
 void UserPage::on_signOutButton_clicked()
 {
+    qDebug() << "sign out";
     emit userSignOut();
 }
 
