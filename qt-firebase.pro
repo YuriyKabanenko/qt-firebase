@@ -12,15 +12,18 @@ SOURCES += \
     authhandler.cpp \
     main.cpp \
     mainwindow.cpp \
-    user.cpp
+    user.cpp \
+    userpage.cpp
 
 HEADERS += \
     authhandler.h \
     mainwindow.h \
-    user.h
+    user.h \
+    userpage.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    userpage.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

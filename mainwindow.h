@@ -19,9 +19,14 @@ public:
 private slots:
     void on_registerButton_clicked();
 
+    void on_loginButton_clicked();
+
+    void on_user_signed_in();
 private:
+    bool isValid(QString& email, QString& password, QWidget* object);
     Ui::MainWindow *ui;
     AuthHandler* authHandler;
     const QString apiKey = "AIzaSyAvHF2PK56LaFSqsmtPumsDJNepC7xp0bc";
+    User* user;
 };
 #endif // MAINWINDOW_H

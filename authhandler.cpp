@@ -4,11 +4,12 @@
 #include <QNetworkRequest>
 #include <QJsonObject>
 
-AuthHandler::AuthHandler(QObject *parent)
+AuthHandler::AuthHandler(QObject *parent, User* user)
     : QObject(parent)
     , m_apiKey( QString() )
 {
     m_networkAccessManager = new QNetworkAccessManager( this );
+    this->user = user;
     connect( this, &AuthHandler::userSignedIn, this, &AuthHandler::performAuthenticatedDatabaseCall );
 }
 
@@ -35,7 +36,7 @@ void AuthHandler::signUserUp(const QString &emailAddress, const QString &passwor
     performPOST( signUpEndpoint, jsonPayload );
 }
 
-void AuthHandler::signUserIn(const QString &emailAddress, const QString &password)
+User AuthHandler::signUserIn(const QString &emailAddress, const QString &password)
 {
     QString signInEndpoint = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + m_apiKey;
 
@@ -47,6 +48,8 @@ void AuthHandler::signUserIn(const QString &emailAddress, const QString &passwor
     QJsonDocument jsonPayload = QJsonDocument::fromVariant( variantPayload );
 
     performPOST( signInEndpoint, jsonPayload );
+
+    return User();
 }
 
 void AuthHandler::networkReplyReadyRead()
@@ -86,6 +89,11 @@ void AuthHandler::parseResponse(const QByteArray &response)
         //qDebug() << "Obtained user ID Token: " << idToken;
         qDebug() << "User signed in successfully!";
         m_idToken = idToken;
+        user->setEmail(jsonDocument.object().take("email").toString());
+        user->setId(jsonDocument.object().take("localId").toString());
+        user->setIsEmailVerified(jsonDocument.object().take("registered").toBool());
+        user->setToken(jsonDocument.object().take("idToken").toString());
+        user->setRefreshToken(jsonDocument.object().take("refreshToken").toString());
         emit userSignedIn();
     }
     else

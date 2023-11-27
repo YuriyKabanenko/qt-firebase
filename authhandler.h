@@ -5,22 +5,21 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QJsonDocument>
+#include "user.h"
 
 class AuthHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit AuthHandler(QObject *parent = nullptr);
+    explicit AuthHandler(QObject *parent = nullptr, User* user = nullptr);
     ~AuthHandler();
     void setAPIKey( const QString & apiKey );
     void signUserUp( const QString & emailAddress, const QString & password );
-    void signUserIn( const QString & emailAddress, const QString & password );
+    User signUserIn( const QString & emailAddress, const QString & password );
 
 public slots:
     void networkReplyReadyRead();
-
     void performAuthenticatedDatabaseCall();
-
 signals:
     void userSignedIn();
 private:
@@ -30,6 +29,7 @@ private:
     QNetworkAccessManager * m_networkAccessManager;
     QNetworkReply * m_networkReply;
     QString m_idToken;
+    User* user;
 };
 
 #endif // AUTHHANDLER_H
