@@ -55,12 +55,21 @@ User AuthHandler::signUserIn(const QString &emailAddress, const QString &passwor
     return User();
 }
 
+void AuthHandler::deleteAccount(QString idToken)
+{
+    this->currentOperation = FirebaseOperation::DeleteAccount;
+    QString deleteAccountEndpoint = "https://identitytoolkit.googleapis.com/v1/accounts:delete?key=" + m_apiKey;
+    QVariantMap variantPayload;
+    variantPayload[idToken] = idToken;
+    QJsonDocument jsonPayload = QJsonDocument::fromVariant( variantPayload );
+    performPOST(deleteAccountEndpoint, jsonPayload);
+}
+
 void AuthHandler::networkReplyReadyRead()
 {
     QByteArray response = m_networkReply->readAll();
     //qDebug() << response;
     m_networkReply->deleteLater();
-
     parseResponse( response );
 }
 
@@ -98,6 +107,7 @@ void AuthHandler::parseResponse(const QByteArray &response )
         emit userSignedIn();
         }
     }
-    else
-        qDebug() << "The response was: " << response;
+    else if(currentOperation == FirebaseOperation::DeleteAccount && !jsonDocument.isArray()){
+        emit accountDeleted();
+    }
 }

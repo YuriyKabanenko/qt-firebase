@@ -18,6 +18,8 @@ public:
     void setRefreshToken(const QString &newRefreshToken);
     void setIsEmailVerified(bool newIsEmailVerified);
 
+    QString getToken() const;
+
 private:
     QString id;
     QString email;

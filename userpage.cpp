@@ -1,13 +1,16 @@
 #include "userpage.h"
 #include "./ui_userpage.h"
 #include "mainwindow.h"
-UserPage::UserPage(QWidget *parent, User* user) :
+UserPage::UserPage(QWidget *parent, User* user, AuthHandler* authHandler) :
     QWidget(parent),
     ui(new Ui::UserPage)
 {
     ui->setupUi(this);
     this->user = user;
     ui->label->setText(ui->label->text() + " " + user->getEmail());
+    this->authHandler = authHandler;
+
+    connect(this->authHandler, &AuthHandler::accountDeleted, this, &UserPage::on_signOutButton_clicked );
 }
 
 UserPage::~UserPage()
@@ -18,8 +21,12 @@ UserPage::~UserPage()
 
 void UserPage::on_signOutButton_clicked()
 {
-    QWidget* mainWindow = new MainWindow(nullptr);
-    this->close();
-    mainWindow->show();
+    emit userSignOut();
 }
+
+void UserPage::on_deleteAccountbutton_clicked()
+{
+    this->authHandler->deleteAccount(this->user->getToken());
+}
+
 

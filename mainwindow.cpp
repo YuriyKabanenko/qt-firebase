@@ -4,15 +4,20 @@
 #include <QDebug>
 #include "userpage.h"
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget *parent, AuthHandler* authHandler)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    user = new User();
-    authHandler = new AuthHandler(this, user);
-    authHandler->setAPIKey(apiKey);
 
-    connect(authHandler, &AuthHandler::userSignedIn, this, &MainWindow::on_user_signed_in );
+    if(authHandler == NULL){
+    user = new User();
+    this->authHandler = new AuthHandler(this, user);
+    this->authHandler->setAPIKey(apiKey);
+    } else{
+     this->authHandler = authHandler;
+    }
+
+    connect(this->authHandler, &AuthHandler::userSignedIn, this, &MainWindow::on_user_signed_in );
 }
 
 MainWindow::~MainWindow()
@@ -54,10 +59,17 @@ void MainWindow::on_loginButton_clicked()
 
 void MainWindow::on_user_signed_in()
 {
+    this->userPage = new UserPage(nullptr, this->user, this->authHandler);
+
     qDebug() << user->getEmail() << " " << "signed in";
-    QWidget* userPage = new UserPage(nullptr,this->user);
-    this->close();
-    userPage->show();
+
+    this->userPage->show();
+    hide();
+    connect(userPage, &UserPage::userSignOut, [this]() {
+        this->userPage->hide();
+        show();
+    });
+
 }
 
 bool MainWindow::isValid(QString& email, QString& password, QWidget* object){

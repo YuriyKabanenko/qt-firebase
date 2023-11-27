@@ -45,6 +45,11 @@ void User::setIsEmailVerified(bool newIsEmailVerified)
     isEmailVerified = newIsEmailVerified;
 }
 
+QString User::getToken() const
+{
+    return token;
+}
+
 User::User(const QString &id, const QString &email, const QString &token, const QString &refreshToken, bool isEmailVerified) : id(id),
     email(email),
     token(token),

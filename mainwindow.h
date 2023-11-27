@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include "authhandler.h"
+#include <QStackedWidget>
+#include "userpage.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -13,7 +15,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget *parent = nullptr, AuthHandler* authHandler = nullptr);
     ~MainWindow();
 
 private slots:
@@ -28,5 +30,6 @@ private:
     AuthHandler* authHandler;
     const QString apiKey = "AIzaSyAvHF2PK56LaFSqsmtPumsDJNepC7xp0bc";
     User* user;
+    UserPage* userPage;
 };
 #endif // MAINWINDOW_H
