@@ -22,6 +22,11 @@ private slots:
 
     void on_deleteAccountbutton_clicked();
 
+    void on_confirmEmailButton_clicked();
+
+    void on_email_verified();
+
+    void on_user_data_updated();
 signals:
     void userSignOut();
 private:

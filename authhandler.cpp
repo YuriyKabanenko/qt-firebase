@@ -4,6 +4,7 @@
 #include <QNetworkRequest>
 #include <QJsonObject>
 #include <QMessageBox>
+#include <QJsonArray>
 
 AuthHandler::AuthHandler(QObject *parent, User* user, QWidget* widgetParent)
     : QObject(parent)
@@ -55,6 +56,20 @@ User AuthHandler::signUserIn(const QString &emailAddress, const QString &passwor
     return User();
 }
 
+void AuthHandler::sendEmailVerification(QString idToken)
+{
+    this->currentOperation = FirebaseOperation::ConfirmEmail;
+    QString confirmationEndpoint = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=" + m_apiKey;
+    QVariantMap variantPayload;
+    variantPayload["requestType"] = "VERIFY_EMAIL";
+    variantPayload["idToken"] = idToken;
+
+    QJsonDocument jsonPayload = QJsonDocument::fromVariant( variantPayload );
+
+    performPOST( confirmationEndpoint, jsonPayload );
+
+}
+
 void AuthHandler::deleteAccount(QString idToken)
 {
     this->currentOperation = FirebaseOperation::DeleteAccount;
@@ -65,10 +80,24 @@ void AuthHandler::deleteAccount(QString idToken)
     performPOST(deleteAccountEndpoint, jsonPayload);
 }
 
+void AuthHandler::getUserData(QString idToken)
+{
+    this->currentOperation = FirebaseOperation::GetUserData;
+    QString getUserDataEndpoint = "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + m_apiKey;
+    QVariantMap variantPayload;
+    variantPayload["idToken"] = idToken;
+    QJsonDocument jsonPayload = QJsonDocument::fromVariant( variantPayload );
+    performPOST(getUserDataEndpoint, jsonPayload);
+}
+
+bool AuthHandler::getEmailVerified()
+{
+    return this->user->getIsEmailVerified();
+}
+
 void AuthHandler::networkReplyReadyRead()
 {
     QByteArray response = m_networkReply->readAll();
-    //qDebug() << response;
     m_networkReply->deleteLater();
     parseResponse( response );
 }
@@ -88,7 +117,26 @@ void AuthHandler::parseResponse(const QByteArray &response )
     if(currentOperation == FirebaseOperation::DeleteAccount){
         emit accountDeleted();
     }
-    else if ( jsonDocument.object().contains("error"))
+    else if(currentOperation == FirebaseOperation::GetUserData){
+        if (!jsonDocument.isNull() && jsonDocument.isObject()) {
+             QJsonObject rootObject = jsonDocument.object();
+
+            if (rootObject.contains("users") && rootObject["users"].isArray()) {
+                 const QJsonArray& userArray = QJsonArray::fromVariantList(rootObject["users"].toArray().toVariantList());
+
+                  const QJsonValue& userObject = userArray.at(0);
+                  bool emailVerified = userObject["emailVerified"].toBool();
+                  this->user->setIsEmailVerified(emailVerified);
+                  qDebug() << "emailVerified:" << userObject;
+                  emit userDataUpdated();
+            }
+        }
+    }
+    else if(currentOperation == FirebaseOperation::ConfirmEmail){
+        qDebug() << jsonDocument.object().take("email");
+        emit emailVerified();
+    }
+    else if (jsonDocument.object().contains("error"))
     {
         QJsonObject errorObject = jsonDocument["error"].toObject();
 
@@ -99,13 +147,11 @@ void AuthHandler::parseResponse(const QByteArray &response )
     else if ( jsonDocument.object().contains("kind"))
     {
         QString idToken = jsonDocument.object().value("idToken").toString();
-        //qDebug() << "Obtained user ID Token: " << idToken;
         qDebug() << "User signed in successfully!";
         if(currentOperation == FirebaseOperation::SignIn){
         m_idToken = idToken;
         user->setEmail(jsonDocument.object().take("email").toString());
         user->setId(jsonDocument.object().take("localId").toString());
-        user->setIsEmailVerified(jsonDocument.object().take("registered").toBool());
         user->setToken(jsonDocument.object().take("idToken").toString());
         user->setRefreshToken(jsonDocument.object().take("refreshToken").toString());
         emit userSignedIn();

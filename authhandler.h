@@ -10,7 +10,9 @@
 enum FirebaseOperation {
     SignIn,
     SignUp,
-    DeleteAccount
+    DeleteAccount,
+    ConfirmEmail,
+    GetUserData
 };
 
 class AuthHandler : public QObject
@@ -22,12 +24,18 @@ public:
     void setAPIKey( const QString & apiKey );
     void signUserUp( const QString & emailAddress, const QString & password );
     User signUserIn( const QString & emailAddress, const QString & password );
+    void sendEmailVerification(QString idToken);
     void deleteAccount(QString idToken);
+    void getUserData(QString idToken);
+
+    bool getEmailVerified();
 public slots:
     void networkReplyReadyRead();
 signals:
     void userSignedIn();
     void accountDeleted();
+    void emailVerified();
+    void userDataUpdated();
 private:
     void performPOST( const QString & url, const QJsonDocument & payload );
     void parseResponse( const QByteArray & reponse);

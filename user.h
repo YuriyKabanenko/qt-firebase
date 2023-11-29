@@ -25,7 +25,7 @@ private:
     QString email;
     QString token;
     QString refreshToken;
-    bool isEmailVerified;
+    bool isEmailVerified = false;
 };
 
 #endif // USER_H

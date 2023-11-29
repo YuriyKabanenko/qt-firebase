@@ -5,6 +5,7 @@
 #include "authhandler.h"
 #include <QStackedWidget>
 #include "userpage.h"
+#include "user.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent, AuthHandler* authHandler)
     }
 
     connect(this->authHandler, &AuthHandler::userSignedIn, this, &MainWindow::on_user_signed_in );
+
 }
 
 MainWindow::~MainWindow()

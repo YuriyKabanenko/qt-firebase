@@ -85,6 +85,24 @@
     <string>ID:</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="confirmEmailButton">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>180</y>
+     <width>221</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>26</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Confirm Email</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
